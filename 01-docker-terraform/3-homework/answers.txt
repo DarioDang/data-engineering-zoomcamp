@@ -20,8 +20,5 @@ Question 07: Question 7. Which of the following sequences describes the Terrafor
     1. Downloading plugins and setting up backend, 
     2. Generating and executing changes, 
     3. Removing all resources? 
-
-    - terraform init, terraform apply -auto-approve, terraform destroy
-
-
-
+    
+    - terraform init, terraform apply -auto-approve, terraform destroy 
