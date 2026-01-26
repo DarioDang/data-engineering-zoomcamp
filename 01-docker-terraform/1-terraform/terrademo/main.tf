@@ -1,23 +1,23 @@
 terraform {
-    required_providers {
-      google = {
-        source = "hashicorp/google"
-        version = "5.6.0"
-      }
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "5.6.0"
     }
+  }
 }
 
 provider "google" {
-    # Configuration options 
-    credentials = "./keys/my-creds.json"
-    project = "de-zoomcamp-project-485521"
-    region = "australia-southeast1" 
+  # Configuration options 
+  credentials = file(var.credentials)
+  project     = var.project
+  region      = var.region
 }
 
 
 resource "google_storage_bucket" "terraform-demo-bucket" {
-  name          = "dario-terraform-bucket-zoomcamp"
-  location      = "australia-southeast1"
+  name          = var.gcs_bucket_name
+  location      = var.gcs_location
   force_destroy = true
 
   lifecycle_rule {
@@ -28,4 +28,11 @@ resource "google_storage_bucket" "terraform-demo-bucket" {
       type = "AbortIncompleteMultipartUpload"
     }
   }
+}
+
+
+resource "google_bigquery_dataset" "terraform-demo-dataset" {
+  dataset_id = var.bq_dataset_name
+  location = var.gcs_location
+
 }
