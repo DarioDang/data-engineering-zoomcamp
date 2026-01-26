@@ -1,0 +1,25 @@
+Question 01: Understanding Docker images?
+- pip version 25.3
+
+Question 02. Given the following docker-compose.yaml, what is the hostname and port that pgadmin should use to connect to the postgres database?
+- db:5432
+
+Question 3. Counting short trips
+- 8,007
+
+Question 04: Longest trip for each day
+- 2025-11-14
+
+Question 05: Biggest pickup zone
+- East Harlem North
+
+Question 06: Largest tip
+- Upper East Side North
+
+Question 07: Question 7. Which of the following sequences describes the Terraform workflow for:
+    1. Downloading plugins and setting up backend, 
+    2. Generating and executing changes, 
+    3. Removing all resources? 
+
+
+
