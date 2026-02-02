@@ -1,0 +1,26 @@
+Question 01: What is count of records for the 2024 Yellow Taxi Data?
+- 20,332,093
+
+Question 02: What is the estimated amount of data that will be read when this query is executed on the External Table and the Table?
+
+- 0 MB for the External Table and 155.12 MB for the Materialized Table
+
+Question 03: Why are the estimated number of Bytes different?
+- BigQuery is a columnar database, and it only scans the specific columns requested in the query. 
+Querying two columns (PULocationID, DOLocationID) requires reading more data than querying one column 
+(PULocationID), leading to a higher estimated number of bytes processed.
+
+Question 05: What is the best strategy to make an optimized table in Big Query if your query will always filter based on tpep_dropoff_datetime and order the results by VendorID (Create a new table with this strategy)
+- Partition by tpep_dropoff_datetime and Cluster on VendorID
+
+Question 06: What are these values?
+- 310.24 MB for non-partitioned table and 26.84 MB for the partitioned table
+
+Question 07: Where is the data stored in the External Table you created?
+- GCP Bucket 
+
+Question 08: It is best practice in Big Query to always cluster your data?
+- False 
+
+Question 09: Write a SELECT count(*) query FROM the materialized table you created. How many bytes does it estimate will be read? Why?
+- It estimate to read about 2.72 GB when run, mainly because it will come through all the record of the data as there are no partitioned or cluster provided for the query to filter on. 
