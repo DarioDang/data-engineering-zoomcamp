@@ -24,6 +24,11 @@ FROM  `de-zoomcamp-project-485521.datawarehouse_nyc_zoomcamp.yellow_tripdata_202
 SELECT PULOCATIONID 
 FROM `de-zoomcamp-project-485521.datawarehouse_nyc_zoomcamp.yellow_tripdata_2024`
 
+-- How many records have a fare_amount of 0 --
+SELECT COUNT(fare_amount) AS fare_amount_0
+FROM `de-zoomcamp-project-485521.datawarehouse_nyc_zoomcamp.yellow_tripdata_2024_ext` 
+WHERE fare_amount = 0;
+
 -- QEUERY TO RETRIEVE PULOCATIONID & DOLOCATIONID FROM REGULAR TABLE --
 SELECT PULOCATIONID, DOLocationID
 FROM `de-zoomcamp-project-485521.datawarehouse_nyc_zoomcamp.yellow_tripdata_2024`
