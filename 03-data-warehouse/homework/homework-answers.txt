@@ -10,6 +10,9 @@ Question 03: Why are the estimated number of Bytes different?
 Querying two columns (PULocationID, DOLocationID) requires reading more data than querying one column 
 (PULocationID), leading to a higher estimated number of bytes processed.
 
+Question 04: How many records have a fare_amount of 0?
+- 8333
+
 Question 05: What is the best strategy to make an optimized table in Big Query if your query will always filter based on tpep_dropoff_datetime and order the results by VendorID (Create a new table with this strategy)
 - Partition by tpep_dropoff_datetime and Cluster on VendorID
 
