@@ -2,7 +2,7 @@
 CREATE OR REPLACE EXTERNAL TABLE `de-zoomcamp-project-485521.datawarehouse_nyc_zoomcamp.yellow_tripdata_2024_ext`
 OPTIONS (
   format = 'PARQUET',
-  uris = ['gs://dario-datawarehouse-de-zoomcamp/yellow_tripdata_2024-*.parquet']
+  uris = ['gs://dario-datawarehouse-de-zoomcamp/yellow-taxi-jan-to-jun-2024/yellow_tripdata_2024-*.parquet']
 );
 
 -- CREATE REGULAR TABLE FROM EXTENAL TABLE -- 
