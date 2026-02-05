@@ -506,17 +506,9 @@ def main():
         sys.exit(1)
 
     # Load into BigQuery
-    # Table naming: {taxi}_tripdata_YYYY_MM
-    for uri in sorted(uploaded_uris):
-        filename = uri.split("/")[-1]  
-        try:
-            y_m = filename.split("_tripdata_")[1].replace(".csv.gz", "")  
-            y, m = y_m.split("-")
-            table_id = f"{args.taxi_type}_tripdata_{y}"
-        except Exception:
-            print(f"⚠️ Could not parse year-month from: {filename}. Skipping BQ load.")
-            continue
+    table_id = f"{args.taxi_type}_tripdata"
 
+    for uri in sorted(uploaded_uris):
         load_csv_to_bq(
             project_id=args.bq_project,
             dataset_id=args.bq_dataset,
@@ -524,7 +516,7 @@ def main():
             gcs_uri=uri,
             partition_field=partition_field,
             schema=schema,
-            write_disposition=args.write_disposition,
+            write_disposition=args.write_disposition, 
         )
 
     print(f"\n✅ Done. Uploaded {len(uploaded_uris)} files and loaded tables into BigQuery.")
