@@ -6,17 +6,17 @@ SELECT
     CAST(dolocationid AS int) AS dropoff_location_id,
 
     -- timestamps --
-    CAST(lpep_pickup_datetime AS timestamps) AS pickup_datetime,
-    CAST(lpep_dropoff_datetime AS timestamps) AS dropoff_datetime,
+    CAST(lpep_pickup_datetime AS timestamp) AS pickup_datetime,
+    CAST(lpep_dropoff_datetime AS timestamp) AS dropoff_datetime,
 
     -- trip details --
     store_and_fwd_flag,
     CAST(passenger_count AS int) as passenger_count,
-    CAST(trip_distance AS float) AS trip_distance,
+    CAST(trip_distance AS FLOAT64) AS trip_distance,
     CAST(trip_type as int) AS trip_type, 
 
     -- payment details --
-    CAST(fare_amounts AS numeric) AS fare_amount, 
+    CAST(fare_amount AS numeric) AS fare_amount, 
     CAST(extra AS numeric) AS extra,
     CAST(mta_tax AS numeric) AS mta_tax,
     CAST(tip_amount AS numeric) AS tip_amount,
