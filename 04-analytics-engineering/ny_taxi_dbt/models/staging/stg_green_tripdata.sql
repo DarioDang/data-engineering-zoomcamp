@@ -27,3 +27,5 @@ SELECT
 
 
 FROM {{ source('nyc_raw_data','green_tripdata') }}
+
+WHERE vendorid IS NOT NULL
