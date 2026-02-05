@@ -10,7 +10,7 @@ SELECT
     CAST(lpep_dropoff_datetime AS timestamp) AS dropoff_datetime,
 
     -- trip details --
-    store_and_fwd_flag,
+    CAST(store_and_fwd_flag AS string) AS store_and_fwd_flag,
     CAST(passenger_count AS int) as passenger_count,
     CAST(trip_distance AS FLOAT64) AS trip_distance,
     CAST(trip_type as int) AS trip_type, 
