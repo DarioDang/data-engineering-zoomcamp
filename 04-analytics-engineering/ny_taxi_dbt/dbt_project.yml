@@ -33,7 +33,3 @@ models:
       +materialized: view
     intermediate:
       +materialized: table
-      +partition_by:
-        field: dropoff_datetime
-        data_type: timestamp
-        granularity: day
