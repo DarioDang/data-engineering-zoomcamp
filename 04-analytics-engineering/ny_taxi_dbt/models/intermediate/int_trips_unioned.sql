@@ -1,8 +1,7 @@
 -- Uniion grren & yellow taxi data into a single dataset 
 
--- CTE table for green taxi data --
 with green_trips as (
-    SELECT 
+    select
         vendor_id,
         rate_code_id,
         pickup_location_id,
@@ -22,13 +21,12 @@ with green_trips as (
         improvement_surcharge,
         total_amount,
         payment_type,
-        'green' AS service_type
-    FROM {{ ref('stg_green_tripdata') }}
+        'Green' as service_type
+    from {{ ref('stg_green_tripdata') }}
 ),
 
--- CTE table for yellow taxi data --
 yellow_trips as (
-    SELECT 
+    select
         vendor_id,
         rate_code_id,
         pickup_location_id,
@@ -38,25 +36,20 @@ yellow_trips as (
         store_and_fwd_flag,
         passenger_count,
         trip_distance,
-        1 AS trip_type, -- Yellow taxis only do street-hail (code 1)
+        cast(1 as integer) as trip_type,  -- Yellow taxis only do street-hail (code 1)
         fare_amount,
         extra,
         mta_tax,
         tip_amount,
         tolls_amount,
-        CAST(0 AS numertic) AS ehail_fee, -- yellow taxi data doesn't have ehail fee
+        cast(0 as numeric) as ehail_fee,  -- Yellow taxis don't have ehail_fee
         improvement_surcharge,
         total_amount,
         payment_type,
-        'yellow' AS service_type
-    FROM {{ ref('stg_yellow_tripdata') }}
+        'Yellow' as service_type
+    from {{ ref('stg_yellow_tripdata') }}
 )
 
--- Union --
-select * 
-from green_trips
-
-UNION ALL
-
-select * 
-from yellow_trips
+select * from green_trips
+union all
+select * from yellow_trips
