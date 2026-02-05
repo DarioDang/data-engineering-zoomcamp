@@ -27,7 +27,7 @@ with green_trips as (
 ),
 
 -- CTE table for yellow taxi data --
-with yellow_trips as (
+yellow_trips as (
     SELECT 
         vendor_id,
         rate_code_id,
