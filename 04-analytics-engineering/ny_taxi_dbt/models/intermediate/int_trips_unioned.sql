@@ -52,14 +52,11 @@ with yellow_trips as (
     FROM {{ ref('stg_yellow_tripdata') }}
 )
 
--- CTE table for union --
-with int_trips_unioned AS (
-    SELECT * FROM green_trips
+-- Union --
+select * 
+from green_trips
 
-    UNION ALL
+UNION ALL
 
-    SELECT * FROM yellow_trips
-)
-
-SELECT * 
-FROM int_trips_unioned
+select * 
+from yellow_trips
