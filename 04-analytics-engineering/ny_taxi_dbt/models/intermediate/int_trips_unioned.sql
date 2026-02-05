@@ -1,5 +1,14 @@
 -- Uniion grren & yellow taxi data into a single dataset 
 
+{{ config(
+    materialized='table',
+    partition_by={
+      "field": "dropoff_datetime",
+      "data_type": "timestamp",
+      "granularity": "day"
+    }
+)}}
+
 with green_trips as (
     select
         vendor_id,
