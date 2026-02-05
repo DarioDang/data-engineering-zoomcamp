@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: nyc_raw_data
+    description: "Raw data sources for NYC taxi rides"
+    database: de-zoomcamp-project-485521 # GCP Project ID
+    schema: datawarehouse_nyc_zoomcamp # dataset name
+    tables:
+      - name: yellow_tripdata
+      - name: green_tripdata 
