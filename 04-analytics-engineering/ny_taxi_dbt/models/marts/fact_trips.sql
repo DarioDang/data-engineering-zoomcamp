@@ -53,7 +53,7 @@ payment_type_lookup as (
     select
         cast(payment_type as int64) as payment_type,
         payment_type_description
-    from {{ ref('payment_type') }}
+    from {{ ref('payment_type_lookup') }}
 )
 
 -- Final: join description onto trips
