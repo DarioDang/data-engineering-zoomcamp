@@ -52,7 +52,7 @@ payment_type_lookup as (
     -- Step 4: payment_type seed table (1=Card, 2=Cash, ...)
     select
         cast(payment_type as int64) as payment_type,
-        payment_type_description
+        description
     from {{ ref('payment_type_lookup') }}
 )
 
