@@ -1,4 +1,11 @@
-{{ config(materialized='table') }}
+{{ config(
+    materialized='table',
+    partition_by={
+      "field": "dropoff_datetime",
+      "data_type": "timestamp",
+      "granularity": "day"
+    }
+)}}
 
 -- ✅ Goal:
 -- 1) Take all trips from int_trips_unioned
