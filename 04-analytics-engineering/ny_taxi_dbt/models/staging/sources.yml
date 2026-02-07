@@ -8,7 +8,6 @@ sources:
     tables:
       - name: green_tripdata
         description: Raw green taxi trip records
-        loaded_at_field: lpep_pickup_datetime
         columns:
           - name: vendorid
             description: |
@@ -22,6 +21,7 @@ sources:
                 pii: false
                 ownership: data_engineering_team
                 importance: high
+              loaded_at_field: lpep_pickup_datetime
           - name: lpep_pickup_datetime
             description: Date and time when the meter was engaged
           - name: lpep_dropoff_datetime
@@ -61,7 +61,6 @@ sources:
 
       - name: yellow_tripdata
         description: Raw yellow taxi trip records
-        loaded_at_field: tpep_pickup_datetime
         columns:
           - name: vendorid
             description: |
@@ -75,6 +74,7 @@ sources:
                 pii: false
                 ownership: data_engineering_team
                 importance: high
+              loaded_at_field: tpep_pickup_datetime
           - name: tpep_pickup_datetime
             description: Date and time when the meter was engaged
           - name: tpep_dropoff_datetime
