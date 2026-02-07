@@ -1,0 +1,64 @@
+version: 2
+
+models: 
+  - name: fact_monthly_zone_revenue 
+    description: "Fact table summarizing monthly revenue by taxi zone"
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - pickup_zone
+            - revenue_month
+            - service_type
+    columns:
+      - name: pickup_zone
+        description: "The taxi zone where the trip started"
+        data_tests:
+          - not_null
+      - name: date
+        description: "The month and year of the trips"
+        data_tests:
+          - not_null
+      - name: revenue_month
+        description: "Total revenue generated in the month for the zone"
+        data_tests:
+          - not_null
+      - name: service_type
+        description: "Type of taxi service (Green or Yellow)"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Green', 'Yellow']
+          - not_null
+      - name: revenue_monthly_fare
+        description: "Total fare amount for the month in the zone"
+        data_tests:
+          - not_null
+      - name: revenue_monthly_extra
+        description: "Total extra charges for the month in the zone"
+      - name: revenue_monthly_mta_tax
+        description: "Total MTA tax collected for the month in the zone"
+      - name: revenue_monthly_tip_amount
+        description: "Total tip amount for the month in the zone"
+      - name: revenue_monthly_tolls_amount
+        description: "Total tolls amount for the month in the zone"
+      - name: revenue_monthly_ehail_fee
+        description: "Total e-hail fees for the month in the zone"
+      - name: revenue_monthly_improvement_surcharge
+        description: "Total improvement surcharge for the month in the zone"
+      - name: revenue_monthly_total_amount
+        description: "Total amount collected for the month in the zone"
+        data_tests:
+          - not_null
+      - name: total_monthly_trips
+        description: "Total number of trips in the month for the zone"
+        data_tests:
+          - not_null
+      - name: avg_monthly_passenger_count
+        description: "Average number of passengers per trip in the month for the zone"
+        data_tests:
+          - not_null
+      - name: avg_monthly_trip_distance
+        description: "Average trip distance in the month for the zone"
+        data_tests:
+          - not_null
+      
