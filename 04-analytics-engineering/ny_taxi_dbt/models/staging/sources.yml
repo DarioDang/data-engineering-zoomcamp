@@ -17,11 +17,11 @@ sources:
                 2: 'VeriFone Inc.'
                 4: 'Unknown/Other'
             data_type: integer
-            meta:
-              pii : false
-              ownership: data_engineering_team
-              importance: high
-              formatting: None
+            config:
+              meta:
+                pii: false
+                ownership: data_engineering_team
+                importance: high
           - name: lpep_pickup_datetime
             description: Date and time when the meter was engaged
           - name: lpep_dropoff_datetime
@@ -70,11 +70,11 @@ sources:
                 2: 'VeriFone Inc.'
                 4: 'Unknown/Other'
             data_type: integer
-            meta:
-              pii : false
-              ownership: data_engineering_team
-              importance: high
-              formatting: None
+            config:
+              meta:
+                pii: false
+                ownership: data_engineering_team
+                importance: high
           - name: tpep_pickup_datetime
             description: Date and time when the meter was engaged
           - name: tpep_dropoff_datetime
