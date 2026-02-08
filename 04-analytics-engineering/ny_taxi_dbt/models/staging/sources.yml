@@ -25,8 +25,33 @@ sources:
                 freshness: null
           - name: lpep_pickup_datetime
             description: Date and time when the meter was engaged
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  expression: ">= '2019-01-01'"
+                  config:
+                    severity: warn
+              - dbt_utils.expression_is_true:
+                  expression: "< '2021-01-01'"
+                  config:
+                    severity: warn
           - name: lpep_dropoff_datetime
             description: Date and time when the meter was disengaged
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  expression: ">= '2019-01-01'"
+                  config:
+                    severity: warn
+              - dbt_utils.expression_is_true:
+                  expression: "< '2021-01-01'"
+                  config:
+                    severity: warn
+              - dbt_utils.expression_is_true:
+                  expression: ">= lpep_pickup_datetime"
+                  config:
+                    severity: error
+                  name: dropoff_after_pickup
           - name: passenger_count
             description: Number of passengers in the vehicle
           - name: trip_distance
@@ -79,8 +104,33 @@ sources:
                 freshness: null
           - name: tpep_pickup_datetime
             description: Date and time when the meter was engaged
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  expression: ">= '2019-01-01'"
+                  config:
+                    severity: warn
+              - dbt_utils.expression_is_true:
+                  expression: "< '2021-01-01'"
+                  config:
+                    severity: warn
           - name: tpep_dropoff_datetime
             description: Date and time when the meter was disengaged
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  expression: ">= '2019-01-01'"
+                  config:
+                    severity: warn
+              - dbt_utils.expression_is_true:
+                  expression: "< '2021-01-01'"
+                  config:
+                    severity: warn
+              - dbt_utils.expression_is_true:
+                  expression: ">= tpep_pickup_datetime"
+                  config:
+                    severity: error
+                  name: dropoff_after_pickup
           - name: passenger_count
             description: Number of passengers in the vehicle
           - name: trip_distance

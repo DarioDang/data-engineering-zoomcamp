@@ -34,7 +34,14 @@ renamed AS (
 
     FROM {{ source('nyc_raw_data','yellow_tripdata') }}
 
-    where vendorid is not null and improvement_surcharge >=0 and fare_amount >= 0 and total_amount >= 0
+    where 
+        vendorid is not null 
+        and improvement_surcharge >=0 
+        and fare_amount >= 0 
+        and total_amount >= 0
+        -- Filter for 2019 and 2020 only (data quality requirement)
+        and extract(year from tpep_pickup_datetime) in (2019, 2020)
+        and extract(year from tpep_dropoff_datetime) in (2019, 2020)
 )
 
 SELECT * FROM renamed

@@ -33,7 +33,13 @@ renamed as (
         {{ safe_cast('payment_type', 'integer') }} as payment_type
     from source
     -- Filter out records with null vendor_id (data quality requirement)
-    where vendorid is not null and improvement_surcharge >=0 and fare_amount >= 0 and total_amount >= 0
+    where 
+        vendorid is not null and improvement_surcharge >=0 
+        and fare_amount >= 0 
+        and total_amount >= 0 and 
+        -- Filter for 2019 and 2020 only
+        and extract(year from lpep_pickup_datetime) in (2019, 2020)
+        and extract(year from lpep_dropoff_datetime) in (2019, 2020)
 )
 
 select * from renamed
