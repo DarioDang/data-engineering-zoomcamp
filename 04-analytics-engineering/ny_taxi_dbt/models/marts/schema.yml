@@ -134,6 +134,11 @@ models:
           - not_null
       - name: payment_type
         description: Payment method code
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
         data_type: integer
       - name: payment_type_description
         description: Human-readable payment method description
