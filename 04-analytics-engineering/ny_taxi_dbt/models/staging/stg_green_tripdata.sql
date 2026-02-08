@@ -36,10 +36,10 @@ renamed as (
     where 
         vendorid is not null and improvement_surcharge >=0 
         and fare_amount >= 0 
-        and total_amount >= 0 and 
+        and total_amount >= 0 
         -- Filter for 2019 and 2020 only
         and extract(year from lpep_pickup_datetime) in (2019, 2020)
-        and extract(year from lpep_dropoff_datetime) in (2019, 2020)
+        and extract(year from lpep_dropoff_datetime) in (2019, 2021)
 )
 
 select * from renamed
