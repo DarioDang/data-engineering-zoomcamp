@@ -91,6 +91,8 @@ select
     t.passenger_count,
     cast(t.trip_distance as numeric) as trip_distance,
     t.trip_type,
+    {{ get_trip_duration_minutes('t.pickup_datetime', 't.dropoff_datetime') }} as trip_duration_minutes,
+
 
     -- Payment breakdown
     t.fare_amount,
