@@ -65,19 +65,45 @@ payment_type_lookup as (
 
 -- Final: join description onto trips
 select
+    -- Trip identifiers
     t.trip_id,
-    t.service_type,
     t.vendor_id,
+    t.service_type,
+    t.rate_code_id,
+
+    -- Location details (enriched with human-readable zone names from dimension)
+    t.pickup_location_id,
+    pz.borough as pickup_borough,
+    pz.zone as pickup_zone,
+    t.dropoff_location_id,
+    dz.borough as dropoff_borough,
+    dz.zone as dropoff_zone,
+
+    -- Trip timing
     t.pickup_datetime,
     t.dropoff_datetime,
-    t.pickup_location_id,
-    t.dropoff_location_id,
+    t.store_and_fwd_flag,
+
+    -- Trip metrics
     t.passenger_count,
-    t.trip_distance,
+    cast(t.trip_distance as numeric) as trip_distance,
+    t.trip_type,
+
+    -- Payment breakdown
     t.fare_amount,
+    t.extra,
+    t.mta_tax,
+    t.tip_amount,
+    t.tolls_amount,
+    t.ehail_fee,
+    t.improvement_surcharge,
     t.total_amount,
     t.payment_type,
     p.payment_type_description
 from deduped_trips t
 left join payment_type_lookup p
     on cast(t.payment_type as int64) = p.payment_type
+left join {{ ref('dim_zones') }} as pz
+    on t.pickup_location_id = pz.location_id
+left join {{ ref('dim_zones') }} as dz
+    on t.dropoff_location_id = dz.location_id
