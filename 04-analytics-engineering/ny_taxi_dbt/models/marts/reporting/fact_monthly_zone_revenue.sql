@@ -13,13 +13,12 @@
 
 select 
     -- Grouping dimensions --
-    coalese(pickup_zone, "Unknown Zone") as pickup_zone,
-    cast(date_trunc(pickup_datetime, month) as date),
-    date_trunc('month', pickup_datetime) as revenue_month
+    coalesce(pickup_zone, 'Unknown Zone') as pickup_zone,
+    cast(date_trunc(pickup_datetime, month) as date) as revenue_month,
     service_type,
 
     -- Revenue breakdown (summed by zone, month and service type)
-    sum(fare_amount) as revenue_monthly_fare
+    sum(fare_amount) as revenue_monthly_fare,
     sum(extra) as revenue_monthly_extra,
     sum(mta_tax) as revenue_monthly_mta_tax,
     sum(tip_amount) as revenue_monthly_tip_amount,
