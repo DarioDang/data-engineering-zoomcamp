@@ -29,4 +29,4 @@ SELECT
 
 FROM {{ source('nyc_raw_data','green_tripdata') }}
 
-WHERE vendorid IS NOT NULL
+WHERE vendorid IS NOT NULL and improvement_surcharge >=0 and fare_amount >= 0 and total_amount >= 0
