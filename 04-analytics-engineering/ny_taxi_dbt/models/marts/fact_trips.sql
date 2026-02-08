@@ -1,5 +1,8 @@
 {{ config(
-    materialized='table',
+    materialized='incremental',
+    unique_key= 'trip_id',
+    incremental_strategy='merge',
+    on_schema_change='append_new_columns'
     partition_by={
       "field": "dropoff_datetime",
       "data_type": "timestamp",
