@@ -103,6 +103,9 @@ models:
       - name: trip_type
         description: Trip type (1=Street-hail, 2=Dispatch)
         data_type: integer
+      - name: trip_duration_minutes
+        description: Trip duration in minutes (calculated using cross-database macro)
+        data_type: bigint
       - name: fare_amount
         description: Time and distance fare
         data_type: numeric
