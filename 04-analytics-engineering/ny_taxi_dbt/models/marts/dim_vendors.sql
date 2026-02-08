@@ -2,7 +2,7 @@
 -- Small static dimension defining vendor codes and their company names
 
 with trips as (
-    select * from {{ ref('fct_trips') }}
+    select * from {{ ref('fact_trips') }}
 ),
 
 vendors as (
