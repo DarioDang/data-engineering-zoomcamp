@@ -1,16 +1,10 @@
-with taxi_zone_lookup as (
-    SELECT *  
-    FROM {{ ref('taxi_zone_lookup') }}
-),
+-- Dimension table for NYC taxi zones
+-- This is a simple pass-through from the seed file, but having it as a model
+-- allows for future enhancements (e.g., adding calculated fields, filtering)
 
-renamed AS (
-    SELECT
-        locationID as location_id,
-        borough,
-        zone,
-        service_zone
-    FROM taxi_zone_lookup
-)
-
-SELECT * 
-FROM renamed
+select
+    locationid as location_id,
+    borough,
+    zone,
+    service_zone
+from {{ ref('taxi_zone_lookup') }}
