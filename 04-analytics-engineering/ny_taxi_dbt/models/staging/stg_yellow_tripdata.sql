@@ -34,7 +34,7 @@ renamed AS (
 
     FROM {{ source('nyc_raw_data','yellow_tripdata') }}
 
-    WHERE vendorid IS NOT NULL
+    where vendorid is not null and improvement_surcharge >=0 and fare_amount >= 0 and total_amount >= 0
 )
 
 SELECT * FROM renamed
