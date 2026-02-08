@@ -28,19 +28,19 @@ models:
         description: "The service zone classification"
   
   - name: fact_trips
-    description: "Fact table containing taxi trip records"
-    config: 
+    description: Fact table with all taxi trips including trip and payment details
+    config:
       contract:
         enforced: true
     columns:
       - name: trip_id
-        description: "The unique identifier for each trip"
+        description: Unique trip identifier
         data_type: string
         data_tests:
-          - not_null
           - unique
+          - not_null
       - name: vendor_id
-        description: "The unique identifier for the taxi vendor"
+        description: Taxi technology provider
         data_type: integer
         data_tests:
           - not_null
@@ -103,9 +103,6 @@ models:
       - name: trip_type
         description: Trip type (1=Street-hail, 2=Dispatch)
         data_type: integer
-      - name: trip_duration_minutes
-        description: Trip duration in minutes (calculated using cross-database macro)
-        data_type: bigint
       - name: fare_amount
         description: Time and distance fare
         data_type: numeric
