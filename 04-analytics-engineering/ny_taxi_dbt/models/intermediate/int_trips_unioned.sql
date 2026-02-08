@@ -1,13 +1,5 @@
--- Uniion grren & yellow taxi data into a single dataset 
-
-{{ config(
-    materialized='table',
-    partition_by={
-      "field": "dropoff_datetime",
-      "data_type": "timestamp",
-      "granularity": "day"
-    }
-)}}
+-- Union green and yellow taxi data into a single dataset
+-- Demonstrates how to combine data from multiple sources with slightly different schemas
 
 with green_trips as (
     select
