@@ -43,7 +43,7 @@ renamed AS (
         and tpep_pickup_datetime >= '2019-01-01'
         and tpep_pickup_datetime < '2021-01-01'
         and tpep_dropoff_datetime >= '2019-01-01'
-        and tpep_dropoff_datetime <= '2021-01-02'
+        and tpep_dropoff_datetime <= '2021-01-01'
         -- Additional safety: ensure dropoff is after pickup
         and tpep_dropoff_datetime >= tpep_pickup_datetime
 )
