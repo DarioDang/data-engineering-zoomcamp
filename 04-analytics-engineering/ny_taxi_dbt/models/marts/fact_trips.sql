@@ -32,7 +32,7 @@ select
 
     -- Trip metrics
     trips.passenger_count,
-    cast(trips.trip_distance as numeric) as trip_distance,
+    trips.trip_distance,
     trips.trip_type,
     {{ get_trip_duration_minutes('trips.pickup_datetime', 'trips.dropoff_datetime') }} as trip_duration_minutes,
 
