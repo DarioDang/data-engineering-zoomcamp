@@ -27,7 +27,7 @@ models:
       - name: vendor_name
         description: Company name of the vendor
 
-  - name: fct_trips
+  - name: fact_trips
     description: Fact table with all taxi trips including trip and payment details
     config:
       contract:
