@@ -35,11 +35,16 @@ renamed as (
     -- Filter out records with null vendor_id (data quality requirement)
     where 
         vendorid is not null and improvement_surcharge >=0 
-        and fare_amount >= 0 
-        and total_amount >= 0 
         -- Filter for 2019 and 2020 only
-        and extract(year from lpep_pickup_datetime) in (2019, 2020)
-        and extract(year from lpep_dropoff_datetime) in (2019, 2021)
+        -- Date range filters (CRITICAL: filter before CAST)
+        and lpep_pickup_datetime is not null
+        and lpep_dropoff_datetime is not null
+        and lpep_pickup_datetime >= '2019-01-01'
+        and lpep_pickup_datetime < '2021-01-01'
+        and lpep_dropoff_datetime >= '2019-01-01'
+        and lpep_dropoff_datetime < '2021-01-01'
+        -- Additional safety: ensure dropoff is after pickup
+        and lpep_dropoff_datetime >= lpep_pickup_datetime
 )
 
 select * from renamed
