@@ -1,5 +1,5 @@
 models:
-  - name: fct_monthly_zone_revenue
+  - name: fact_monthly_zone_revenue
     description: Monthly revenue aggregation by pickup zone and service type for business reporting
     data_tests:
       - dbt_utils.unique_combination_of_columns:
