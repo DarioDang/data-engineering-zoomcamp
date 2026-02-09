@@ -42,7 +42,7 @@ renamed as (
         and lpep_pickup_datetime >= '2019-01-01'
         and lpep_pickup_datetime < '2021-01-01'
         and lpep_dropoff_datetime >= '2019-01-01'
-        and lpep_dropoff_datetime < '2021-01-01'
+        and lpep_dropoff_datetime <= '2021-01-01'
         -- Additional safety: ensure dropoff is after pickup
         and lpep_dropoff_datetime >= lpep_pickup_datetime
 )
