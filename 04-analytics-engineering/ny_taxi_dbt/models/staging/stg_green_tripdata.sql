@@ -33,8 +33,7 @@ renamed as (
         {{ safe_cast('payment_type', 'integer') }} as payment_type
     from source
     -- Filter out records with null vendor_id (data quality requirement)
-    where 
-        vendorid is not null
+    where vendorid is not null
 )
 
 select * from renamed
