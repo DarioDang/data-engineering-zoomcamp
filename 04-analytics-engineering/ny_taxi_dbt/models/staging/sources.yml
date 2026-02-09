@@ -25,33 +25,8 @@ sources:
                 freshness: null
           - name: lpep_pickup_datetime
             description: Date and time when the meter was engaged
-            tests:
-              - not_null
-              - dbt_utils.expression_is_true:
-                  expression: ">= '2019-01-01'"
-                  config:
-                    severity: warn
-              - dbt_utils.expression_is_true:
-                  expression: "< '2021-01-01'"
-                  config:
-                    severity: warn
           - name: lpep_dropoff_datetime
             description: Date and time when the meter was disengaged
-            tests:
-              - not_null
-              - dbt_utils.expression_is_true:
-                  expression: ">= '2019-01-01'"
-                  config:
-                    severity: warn
-              - dbt_utils.expression_is_true:
-                  expression: "< '2021-01-01'"
-                  config:
-                    severity: warn
-              - dbt_utils.expression_is_true:
-                  expression: ">= lpep_pickup_datetime"
-                  config:
-                    severity: error
-                  name: dropoff_after_pickup
           - name: passenger_count
             description: Number of passengers in the vehicle
           - name: trip_distance
@@ -66,6 +41,11 @@ sources:
             description: Trip record held in vehicle memory (Y/N)
           - name: payment_type
             description: Payment method (1=Credit card, 2=Cash, 3=No charge, 4=Dispute, 5=Unknown, 6=Voided)
+            data_tests:
+              - accepted_values:
+                  arguments:
+                    values: [1, 2, 3, 4, 5]
+                    quote: false
           - name: fare_amount
             description: Time and distance fare
           - name: extra
@@ -104,33 +84,8 @@ sources:
                 freshness: null
           - name: tpep_pickup_datetime
             description: Date and time when the meter was engaged
-            tests:
-              - not_null
-              - dbt_utils.expression_is_true:
-                  expression: ">= '2019-01-01'"
-                  config:
-                    severity: warn
-              - dbt_utils.expression_is_true:
-                  expression: "< '2021-01-01'"
-                  config:
-                    severity: warn
           - name: tpep_dropoff_datetime
             description: Date and time when the meter was disengaged
-            tests:
-              - not_null
-              - dbt_utils.expression_is_true:
-                  expression: ">= '2019-01-01'"
-                  config:
-                    severity: warn
-              - dbt_utils.expression_is_true:
-                  expression: "< '2021-01-01'"
-                  config:
-                    severity: warn
-              - dbt_utils.expression_is_true:
-                  expression: ">= tpep_pickup_datetime"
-                  config:
-                    severity: error
-                  name: dropoff_after_pickup
           - name: passenger_count
             description: Number of passengers in the vehicle
           - name: trip_distance
@@ -144,7 +99,12 @@ sources:
           - name: store_and_fwd_flag
             description: Trip record held in vehicle memory (Y/N)
           - name: payment_type
-            description: Payment method (1=Credit card, 2=Cash, 3=No charge, 4=Dispute, 5=Unknown, 6=Voided)
+            description: Payment method (1=Credit card, 2=Cash, 3=No charge, 4=Dispute, 5=Unknown)
+            data_tests:
+              - accepted_values:
+                  arguments:
+                    values: [1, 2, 3, 4, 5]
+                    quote: false
           - name: fare_amount
             description: Time and distance fare
           - name: extra

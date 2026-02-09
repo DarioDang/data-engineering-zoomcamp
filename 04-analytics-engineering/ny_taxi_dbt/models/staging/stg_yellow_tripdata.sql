@@ -30,22 +30,10 @@ renamed AS (
         CAST(improvement_surcharge AS numeric) AS improvement_surcharge,
         CAST(total_amount AS numeric) AS total_amount,
         CAST(payment_type AS int) AS payment_type,
-
-
-    FROM {{ source('nyc_raw_data','yellow_tripdata') }}
+    FROM source
 
     where 
         vendorid is not null 
-        and improvement_surcharge >=0 
-        -- Filter for 2019 and 2020 only (data quality requirement)
-        and tpep_pickup_datetime is not null
-        and tpep_dropoff_datetime is not null
-        and tpep_pickup_datetime >= '2019-01-01'
-        and tpep_pickup_datetime < '2021-01-01'
-        and tpep_dropoff_datetime >= '2019-01-01'
-        and tpep_dropoff_datetime <= '2021-01-01'
-        -- Additional safety: ensure dropoff is after pickup
-        and tpep_dropoff_datetime >= tpep_pickup_datetime
 )
 
 SELECT * FROM renamed
