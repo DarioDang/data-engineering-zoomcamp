@@ -5,9 +5,7 @@
 select
     -- Grouping dimensions
     coalesce(pickup_zone, 'Unknown Zone') as pickup_zone,
-    {% if target.type == 'bigquery' %}cast(date_trunc(pickup_datetime, month) as date)
-    {% elif target.type == 'duckdb' %}date_trunc('month', pickup_datetime)
-    {% endif %} as revenue_month,
+    cast(date_trunc(pickup_datetime, month) as date) as revenue_month,
     service_type,
 
     -- Revenue breakdown (summed by zone, month, and service type)
@@ -25,5 +23,5 @@ select
     avg(passenger_count) as avg_monthly_passenger_count,
     avg(trip_distance) as avg_monthly_trip_distance
 
-from {{ ref('fact_trips') }}
+from {{ ref('fct_trips') }}
 group by pickup_zone, revenue_month, service_type
