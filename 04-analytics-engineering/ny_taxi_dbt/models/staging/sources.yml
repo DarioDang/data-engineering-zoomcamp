@@ -89,3 +89,23 @@ sources:
             description: Improvement surcharge
           - name: total_amount
             description: Total amount charged
+
+      - name: fhv_green_tripdata
+        description: Raw green for-hire vehicle trip records
+        config:
+          loaded_at_field: pickup_datetime
+        columns:
+          - name: dispatching_base_num
+            description: "Base company affiliated with the trip record"
+          - name: pickup_datetime
+            description: Date and time when the meter was engaged
+          - name: dropoff_datetime
+            description: Date and time when the meter was disengaged
+          - name: pulocationid
+            description: TLC Taxi Zone where the meter was engaged
+          - name: dolocationid
+            description: TLC Taxi Zone where the meter was disengaged
+          - name: sr_flag
+            description: Shared ride flag (0/1)
+          - name: Affiliated_base_number
+            description: "Base company affiliated with the trip record"
