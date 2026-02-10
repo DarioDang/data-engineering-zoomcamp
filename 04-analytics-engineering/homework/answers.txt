@@ -1,0 +1,17 @@
+Question 1: What happen if you run dbt run --select int_trips_unioned, what models will be built?
+- int_trips_unioned only
+
+Question 2: What happens when you run dbt test --select fct_trips?
+- dbt will fail the test, returning a non-zero exit code
+
+Question 03: Counting Records in fct_monthly_zone_revenue
+- 12,184
+
+Question 04: Best Performing Zone for Green Taxis (2020)
+- East Harlem North
+
+Question 05: Green Taxi Trip Counts (October 2019)
+- 384,624
+
+Question 06: count of records in stg_fhv_tripdata
+- 43244693
