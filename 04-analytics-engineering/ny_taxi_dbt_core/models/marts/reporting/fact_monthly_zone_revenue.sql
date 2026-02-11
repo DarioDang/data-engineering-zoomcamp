@@ -20,8 +20,8 @@ select
 
     -- Additional metrics for operational analysis
     count(trip_id) as total_monthly_trips,
-    avg(passenger_count) as avg_monthly_passenger_count,
-    avg(trip_distance) as avg_monthly_trip_distance
+    cast(round(avg(passenger_count), 2) as numeric(10,2)) as avg_monthly_passenger_count,
+    cast(round(avg(trip_distance), 2) as numeric(10,2)) as avg_monthly_trip_distance
 
 from {{ ref('fact_trips') }}
 group by pickup_zone, revenue_month, service_type

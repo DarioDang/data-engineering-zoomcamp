@@ -12,44 +12,48 @@
 
 select
     -- Trip identifiers
-    trips.trip_id,
-    trips.vendor_id,
-    trips.service_type,
-    trips.rate_code_id,
+    cast(trips.trip_id as text) as trip_id,
+    cast(trips.vendor_id as integer) as vendor_id,
+    cast(trips.service_type as text) as service_type,
+    cast(trips.rate_code_id as integer) as rate_code_id,
 
-    -- Location details (enriched with human-readable zone names from dimension)
-    trips.pickup_location_id,
-    pz.borough as pickup_borough,
-    pz.zone as pickup_zone,
-    trips.dropoff_location_id,
-    dz.borough as dropoff_borough,
-    dz.zone as dropoff_zone,
+    -- Location details
+    cast(trips.pickup_location_id as integer) as pickup_location_id,
+    cast(pz.borough as text) as pickup_borough,
+    cast(pz.zone as text) as pickup_zone,
+
+    cast(trips.dropoff_location_id as integer) as dropoff_location_id,
+    cast(dz.borough as text) as dropoff_borough,
+    cast(dz.zone as text) as dropoff_zone,
 
     -- Trip timing
-    trips.pickup_datetime,
-    trips.dropoff_datetime,
-    trips.store_and_fwd_flag,
+    cast(trips.pickup_datetime as timestamp) as pickup_datetime,
+    cast(trips.dropoff_datetime as timestamp) as dropoff_datetime,
+    cast(trips.store_and_fwd_flag as text) as store_and_fwd_flag,
 
     -- Trip metrics
-    trips.passenger_count,
-    trips.trip_distance,
-    trips.trip_type,
-    {{ get_trip_duration_minutes('trips.pickup_datetime', 'trips.dropoff_datetime') }} as trip_duration_minutes,
+    cast(trips.passenger_count as integer) as passenger_count,
+    cast(trips.trip_distance as numeric(10,2)) as trip_distance,
+    cast(trips.trip_type as integer) as trip_type,
+    cast(
+        {{ get_trip_duration_minutes('trips.pickup_datetime', 'trips.dropoff_datetime') }}
+        as bigint
+    ) as trip_duration_minutes,
 
     -- Payment breakdown
-    trips.fare_amount,
-    trips.extra,
-    trips.mta_tax,
-    trips.tip_amount,
-    trips.tolls_amount,
-    trips.ehail_fee,
-    trips.improvement_surcharge,
-    trips.total_amount,
-    trips.payment_type,
-    trips.payment_type_description
+    cast(trips.fare_amount as numeric(18,2)) as fare_amount,
+    cast(trips.extra as numeric(18,2)) as extra,
+    cast(trips.mta_tax as numeric(18,2)) as mta_tax,
+    cast(trips.tip_amount as numeric(18,2)) as tip_amount,
+    cast(trips.tolls_amount as numeric(18,2)) as tolls_amount,
+    cast(trips.ehail_fee as numeric(18,2)) as ehail_fee,
+    cast(trips.improvement_surcharge as numeric(18,2)) as improvement_surcharge,
+    cast(trips.total_amount as numeric(18,2)) as total_amount,
+
+    cast(trips.payment_type as integer) as payment_type,
+    cast(trips.payment_type_description as text) as payment_type_description
 
 from {{ ref('int_trips') }} as trips
--- LEFT JOIN preserves all trips even if zone information is missing or unknown
 left join {{ ref('dim_zones') }} as pz
     on trips.pickup_location_id = pz.location_id
 left join {{ ref('dim_zones') }} as dz
