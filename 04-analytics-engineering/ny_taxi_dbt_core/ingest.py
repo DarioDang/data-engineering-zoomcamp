@@ -28,15 +28,17 @@ def setup_postgres_connection(db_config):
         raise Exception(f"Failed to connect to PostgreSQL: {e}")
 
 def create_schema(conn):
-    """Create prod schema if it doesn't exist"""
+    """Create raw, dev, and prod schemas if they don't exist"""
     try:
         with conn.cursor() as cur:
+            cur.execute("CREATE SCHEMA IF NOT EXISTS raw")
+            cur.execute("CREATE SCHEMA IF NOT EXISTS dev")
             cur.execute("CREATE SCHEMA IF NOT EXISTS prod")
             conn.commit()
-        print("✓ Created schema: prod\n")
+        print("✓ Created schemas: raw, dev, prod\n")
     except Exception as e:
         conn.rollback()
-        print(f"⚠ Warning creating schema: {e}\n")
+        print(f"⚠ Warning creating schemas: {e}\n")
 
 def generate_urls(taxi_type: str, years: List[int], months: List[int] = None) -> List[dict]:
     """Generate GitHub release URLs for given taxi type, years, and months"""
@@ -125,8 +127,15 @@ def read_csv_from_url(url: str, filename: str, chunksize: int = 100000, max_retr
             else:
                 raise Exception(f"Failed to download {url} after {max_retries} attempts: {e}")
 
-def create_table_from_first_chunk(conn, table_name: str, df: pd.DataFrame):
-    """Create table based on first chunk's schema"""
+def create_table_from_first_chunk(conn, table_name: str, df: pd.DataFrame, drop_first: bool = False):
+    """Create table based on first chunk's schema
+    
+    Args:
+        conn: PostgreSQL connection
+        table_name: Full table name (schema.table)
+        df: DataFrame with schema to use
+        drop_first: If True, drop existing table before creating (default: False)
+    """
     
     # Map pandas dtypes to PostgreSQL types
     dtype_mapping = {
@@ -147,20 +156,23 @@ def create_table_from_first_chunk(conn, table_name: str, df: pd.DataFrame):
     # Split schema and table name
     schema, table = table_name.split('.')
     
-    create_sql = f"""
-        CREATE TABLE IF NOT EXISTS {schema}.{table} (
-            {', '.join(columns)}
-        )
-    """
-    
-    drop_sql = f"DROP TABLE IF EXISTS {schema}.{table}"
-    
     with conn.cursor() as cur:
-        cur.execute(drop_sql)
+        # Only drop if explicitly requested
+        if drop_first:
+            drop_sql = f"DROP TABLE IF EXISTS {schema}.{table}"
+            cur.execute(drop_sql)
+            print(f"  ✓ Dropped existing table: {table_name}")
+        
+        # Create table only if it doesn't exist
+        create_sql = f"""
+            CREATE TABLE IF NOT EXISTS {schema}.{table} (
+                {', '.join(columns)}
+            )
+        """
         cur.execute(create_sql)
         conn.commit()
     
-    print(f"  ✓ Created table: {table_name}")
+    print(f"  ✓ Table ready: {table_name}")
     print(f"    Columns: {len(columns)}")
 
 def insert_dataframe_to_postgres(conn, table_name: str, df: pd.DataFrame) -> int:
@@ -169,30 +181,37 @@ def insert_dataframe_to_postgres(conn, table_name: str, df: pd.DataFrame) -> int
     # Clean column names
     df.columns = [col.replace(' ', '_').replace('-', '_').lower() for col in df.columns]
     
-    # Create a CSV buffer
+    # Fix float columns that represent integers (e.g., 1.0 -> 1)
+    # This prevents "invalid input syntax for type bigint" errors
+    for col in df.select_dtypes(include=['float64']).columns:
+        # Check if all non-null values are whole numbers
+        if df[col].notna().any():
+            non_null = df[col].dropna()
+            if (non_null % 1 == 0).all():
+                # Convert to Int64 (nullable integer type)
+                df[col] = df[col].astype('Int64')
+    
+    # Create a CSV buffer with proper NULL handling
     buffer = io.StringIO()
-    df.to_csv(buffer, index=False, header=False)
+    df.to_csv(buffer, index=False, header=False, na_rep='\\N')
     buffer.seek(0)
     
     # Split schema and table name for COPY command
     schema, table = table_name.split('.')
     
     with conn.cursor() as cur:
-        # Use psycopg2's sql module for proper identifier handling
-        full_table = sql.Identifier(schema, table)
-        
-        # Build the COPY query using execute instead of copy_from for proper quoting
+        # Build the COPY query with NULL handling
         columns_str = ', '.join([f'"{col}"' for col in df.columns])
-        copy_query = f"COPY {schema}.{table} ({columns_str}) FROM STDIN WITH CSV"
+        copy_query = f"COPY {schema}.{table} ({columns_str}) FROM STDIN WITH (FORMAT CSV, NULL '\\N')"
         
         cur.copy_expert(copy_query, buffer)
     
     return len(df)
 
-def load_taxi_data_from_github(conn, taxi_type: str, years: List[int], months: List[int] = None):
+def load_taxi_data_from_github(conn, taxi_type: str, years: List[int], months: List[int] = None, replace: bool = False):
     """Load taxi data from GitHub releases into PostgreSQL"""
     
-    table_name = f"prod.{taxi_type}_tripdata"
+    table_name = f"raw.{taxi_type}_tripdata"  # Changed from prod to raw
     
     print(f"Loading {taxi_type} taxi data from GitHub:")
     print(f"  Years: {years}")
@@ -200,6 +219,7 @@ def load_taxi_data_from_github(conn, taxi_type: str, years: List[int], months: L
         print(f"  Months: {months}")
     else:
         print(f"  Months: All (1-12)")
+    print(f"  Mode: {'REPLACE (delete existing data)' if replace else 'APPEND (keep existing data)'}")
     print(f"  Target: {table_name}\n")
     
     try:
@@ -239,7 +259,7 @@ def load_taxi_data_from_github(conn, taxi_type: str, years: List[int], months: L
                         
                         # Create table from first chunk of first file
                         if not table_created:
-                            create_table_from_first_chunk(conn, table_name, chunk)
+                            create_table_from_first_chunk(conn, table_name, chunk, drop_first=replace)
                             table_created = True
                         
                         # Insert chunk
@@ -270,7 +290,7 @@ def load_taxi_data_from_github(conn, taxi_type: str, years: List[int], months: L
 
 def verify_data(conn, taxi_type: str):
     """Verify loaded data"""
-    table_name = f"prod.{taxi_type}_tripdata"
+    table_name = f"raw.{taxi_type}_tripdata"  # Changed from prod to raw
     schema, table = table_name.split('.')
     
     try:
@@ -312,22 +332,25 @@ Setup:
      POSTGRES_PASSWORD=root
 
 Examples:
-  # Load all months for 2019 and 2020
+  # Load all months for 2019 and 2020 (append mode - keeps existing data)
   python ingest.py --taxi-type green --year 2019 2020
   
-  # Load only January and February
+  # Load only January and February (append to existing table)
   python ingest.py --taxi-type green --year 2019 --month 1 2
   
-  # Load January through June using month range (green)
-  python ingest.py --taxi-type green --year 2019 2020 --month-range 1 6
+  # Load March and ADD to existing Jan-Feb data
+  python ingest.py --taxi-type green --year 2019 --month 3
+  
+  # Load January through June (replace mode - deletes existing data first)
+  python ingest.py --taxi-type green --year 2019 2020 --month-range 1 6 --replace
 
-  # Load January through June using month range (yellow)
-  python ingest.py --taxi-type yellow --year 2019 2020 --month-range 1 6
+  # Load January through June for yellow (append mode)
+  python ingest.py --taxi-type yellow --year 2019 --month-range 1 6
   
-  # Load specific months across multiple years
-  python ingest.py --taxi-type yellow green --year 2019 2020 --month 1 6 12
+  # Load specific months and replace existing data
+  python ingest.py --taxi-type yellow green --year 2019 2020 --month 1 6 12 --replace
   
-  # Default: both taxi types, years 2019-2020, all months
+  # Default: both taxi types, years 2019-2020, all months, append mode
   python ingest.py
         """
     )
@@ -363,6 +386,12 @@ Examples:
         type=int,
         metavar=('START', 'END'),
         help='Month range to process (inclusive). Example: --month-range 1 6 for Jan-Jun'
+    )
+    
+    parser.add_argument(
+        '--replace',
+        action='store_true',
+        help='Replace existing table data (default: append to existing table)'
     )
     
     args = parser.parse_args()
@@ -432,7 +461,7 @@ Examples:
         print(f"Processing {taxi_type} taxi data")
         print(f"{'='*60}\n")
         
-        if load_taxi_data_from_github(conn, taxi_type, args.year, months_to_process):
+        if load_taxi_data_from_github(conn, taxi_type, args.year, months_to_process, args.replace):
             success_count += 1
             verify_data(conn, taxi_type)
     
