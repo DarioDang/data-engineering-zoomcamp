@@ -1062,9 +1062,9 @@ GROUP BY service_type;
 
 ## 17. Change Log
 
-| Date       | Version | Author              | Change Description                           |
+| Date       | Version | Author              |
 |------------|---------|---------------------|----------------------------------------------|
-| 2026-02-19 | 1.0.0   | Dario Dang    | Initial documentation release                |
+| 2026-02-19 | 1.0.0   | Dario Dang    |         
 
 ---
 
