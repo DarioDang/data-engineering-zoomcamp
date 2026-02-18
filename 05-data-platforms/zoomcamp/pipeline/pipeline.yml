@@ -1,0 +1,14 @@
+name: nyc-taxi
+
+schedule: "daily"
+start_date: "2022-01-01"
+
+default_connections:
+  postgres: pg-zoomcamp
+
+variables:
+  taxi_types:
+    type: array
+    items:
+      type: string
+    default: ["green", "yellow"]
