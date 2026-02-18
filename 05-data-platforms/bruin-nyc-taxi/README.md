@@ -1064,8 +1064,8 @@ GROUP BY service_type;
 
 | Date       | Version | Author              | Change Description                           |
 |------------|---------|---------------------|----------------------------------------------|
-| 2026-02-19 | 1.0.0   | Data Engineering    | Initial documentation release                |
+| 2026-02-19 | 1.0.0   | Dario Dang    | Initial documentation release                |
 
 ---
 
-*This document is maintained by the Data Engineering team. For questions or updates, contact the Data Platform Lead or open an issue in the project repository.*
+*This document is maintained by Dario Dang. For personal and learning purpose. 
