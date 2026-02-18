@@ -395,3 +395,11 @@ Source (NYC TLC Parquet) ──> raw.yellow_tripdata ──┘         ^
                                                              |
                               raw.payment_lookup ────────────┘
 ```
+
+---
+
+## Authors
+
+| Name | Role |
+|------|------|
+| **Dario Dang** | Data Engineer |
