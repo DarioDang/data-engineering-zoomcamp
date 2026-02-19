@@ -1,0 +1,8 @@
+
+target/
+dbt_packages/
+logs/
+package-lock.yml
+README.md
+taxi_rides_ny.duckdb
+dbt_internal_packages/

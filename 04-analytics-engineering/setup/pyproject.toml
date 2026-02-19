@@ -9,7 +9,9 @@ dependencies = [
     "google-cloud-bigquery>=3.40.0",
     "google-cloud-storage>=3.9.0",
     "pandas>=2.3.3",
+>>>>>>> 0e1c6a3f91b50d2f4fff023d89a5de5fe6fa0a84
     "pyarrow>=23.0.0",
     "python-dotenv>=1.2.1",
+    "sqlalchemy==2.0.23",
     "tqdm>=4.67.3",
 ]

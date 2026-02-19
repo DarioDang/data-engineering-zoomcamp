@@ -1,0 +1,6 @@
+Complete Connection Settings:
+- Host name/address: postgres
+- Port: 5432
+- Maintenance database: nyc_taxi
+- Username: root
+- Password: root
