@@ -8,9 +8,8 @@ dependencies = [
     "dbt-postgres>=1.10.0",
     "google-cloud-bigquery>=3.40.0",
     "google-cloud-storage>=3.9.0",
-    "numpy>=2.2.6",
     "pandas>=2.3.3",
-    "psycopg2-binary==2.9.9",
+>>>>>>> 0e1c6a3f91b50d2f4fff023d89a5de5fe6fa0a84
     "pyarrow>=23.0.0",
     "python-dotenv>=1.2.1",
     "sqlalchemy==2.0.23",

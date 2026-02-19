@@ -1,0 +1,27 @@
+Question 01: In a Bruin project, what are the required files/directories?
+
+- .bruin.yml and pipeline/ with pipeline.yml and assets/
+
+Question 02: You're building a pipeline that processes NYC taxi data organized by month based on pickup_datetime. Which materialization strategy should you use for the staging layer that deduplicates and cleans the data?
+
+- time_interval - incremental based on a time column
+
+Question 03: How do you override this when running the pipeline to only process yellow taxis?
+
+- bruin run --var 'taxi_types=["yellow"]'
+
+Question 04: You've modified the ingestion/trips.py asset and want to run it plus all downstream assets. Which command should you use?
+
+- bruin run ingestion/trips.py --downstream
+
+Question 05: You want to ensure the pickup_datetime column in your trips table never has NULL values. Which quality check should you add to your asset definition?
+
+- not_null: true
+
+Question 06: After building your pipeline, you want to visualize the dependency graph between assets. Which Bruin command should you use?
+
+- bruin lineage
+
+Question 07: You're running a Bruin pipeline for the first time on a new DuckDB database. What flag should you use to ensure tables are created from scratch?
+
+- "--full-refresh"

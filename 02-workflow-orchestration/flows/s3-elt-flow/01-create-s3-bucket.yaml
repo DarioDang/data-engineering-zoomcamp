@@ -1,0 +1,20 @@
+id: 10_create_s3_bucket
+namespace: zoomcamp
+
+inputs:
+  - id: bucket
+    type: STRING
+    defaults: dario-kestra-nyc-data
+
+  - id: region
+    type: STRING
+    defaults: ap-southeast-2
+
+tasks:
+  - id: create_bucket
+    type: io.kestra.plugin.aws.s3.CreateBucket
+    accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+    secretKeyId: "{{ secret('AWS_SECRET_KEY_ID') }}"
+    region: "{{ inputs.region }}"
+    bucket: "{{ inputs.bucket }}"
+    

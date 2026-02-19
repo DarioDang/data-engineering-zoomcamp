@@ -1,0 +1,338 @@
+id: 11_upload_nytaxi_s3
+namespace: zoomcamp
+description: |
+  The CSV Data used is at: https://github.com/DataTalksClub/nyc-tlc-data/releases
+
+inputs:
+  - id: taxi
+    type: SELECT
+    displayName: Select taxi type
+    values: [yellow, green]
+    defaults: green
+  
+  - id: year 
+    type: SELECT 
+    displayName: Select Year
+    values: ["2019", "2020", "2021", "2022", "2023", "2024", "2025"]
+    defaults: "2019"
+    allowCustomValue: True 
+
+  - id: month
+    type: SELECT 
+    displayName: Select Month
+    values: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
+    defaults: "01"
+
+variables:
+  file: "{{inputs.taxi}}_tripdata_{{inputs.year}}-{{inputs.month}}.csv"
+  s3_path: "{{inputs.taxi}}/year={{inputs.year}}/month={{inputs.month}}/{{vars.file}}"
+  data: "{{outputs.extract.outputFiles[inputs.taxi ~ '_tripdata_' ~ inputs.year ~ '-' ~ inputs.month ~ '.csv']}}"
+
+tasks:
+  - id: create_athena_database
+    type: io.kestra.plugin.aws.athena.Query
+    query: |
+      CREATE DATABASE IF NOT EXISTS {{ kv('AWS_DATABASE') }};
+      
+  - id: set_label
+    type: io.kestra.plugin.core.execution.Labels
+    labels:
+      file: "{{render(vars.file)}}"
+      taxi: "{{inputs.taxi}}"
+  
+  - id: extract 
+    type: io.kestra.plugin.scripts.shell.Commands
+    outputFiles:
+      - "*.csv"
+    taskRunner:
+      type: io.kestra.plugin.core.runner.Process
+    commands:
+      - wget -qO- https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{{inputs.taxi}}/{{render(vars.file)}}.gz | gunzip > {{render(vars.file)}}
+
+  - id: load_to_s3
+    type: io.kestra.plugin.aws.s3.Upload
+    from: "{{ render(vars.data) }}"
+    key: "{{ render(vars.s3_path) }}"
+
+  - id: if_yellow_taxi
+    type: io.kestra.plugin.core.flow.If
+    condition: "{{inputs.taxi == 'yellow'}}"
+    then:
+      - id: athena_create_yellow_staging_table
+        type: io.kestra.plugin.aws.athena.Query
+        query: |
+          CREATE EXTERNAL TABLE IF NOT EXISTS yellow_tripdata_staging (
+              VendorID STRING,
+              tpep_pickup_datetime TIMESTAMP,
+              tpep_dropoff_datetime TIMESTAMP,
+              passenger_count INT,
+              trip_distance DECIMAL(10,2),
+              RatecodeID STRING,
+              store_and_fwd_flag STRING,
+              PULocationID STRING,
+              DOLocationID STRING,
+              payment_type INT,
+              fare_amount DECIMAL(10,2),
+              extra DECIMAL(10,2),
+              mta_tax DECIMAL(10,2),
+              tip_amount DECIMAL(10,2),
+              tolls_amount DECIMAL(10,2),
+              improvement_surcharge DECIMAL(10,2),
+              total_amount DECIMAL(10,2),
+              congestion_surcharge DECIMAL(10,2)
+          )
+          PARTITIONED BY (year STRING, month STRING)
+          ROW FORMAT DELIMITED
+          FIELDS TERMINATED BY ','
+          STORED AS TEXTFILE
+          LOCATION 's3://{{ kv('AWS_BUCKET_NAME') }}/yellow/'
+          TBLPROPERTIES (
+              'skip.header.line.count'='1',
+              'serialization.null.format'=''
+          );
+    
+      - id: athena_repair_partitions
+        type: io.kestra.plugin.aws.athena.Query
+        query: |
+          MSCK REPAIR TABLE yellow_tripdata_staging;
+      
+      - id: athena_create_yellow_final_table
+        type: io.kestra.plugin.aws.athena.Query
+        query: |
+          CREATE EXTERNAL TABLE IF NOT EXISTS yellow_tripdata_final (
+              unique_row_id VARCHAR(32),
+              filename VARCHAR(255),
+              VendorID STRING,
+              tpep_pickup_datetime TIMESTAMP,
+              tpep_dropoff_datetime TIMESTAMP,
+              passenger_count INT,
+              trip_distance DECIMAL(10,2),
+              RatecodeID STRING,
+              store_and_fwd_flag STRING,
+              PULocationID STRING,
+              DOLocationID STRING,
+              payment_type INT,
+              fare_amount DECIMAL(10,2),
+              extra DECIMAL(10,2),
+              mta_tax DECIMAL(10,2),
+              tip_amount DECIMAL(10,2),
+              tolls_amount DECIMAL(10,2),
+              improvement_surcharge DECIMAL(10,2),
+              total_amount DECIMAL(10,2),
+              congestion_surcharge DECIMAL(10,2)
+          )
+          PARTITIONED BY (year STRING, month STRING)
+          STORED AS PARQUET
+          LOCATION 's3://{{ kv('AWS_BUCKET_NAME') }}/yellow_final/'
+          TBLPROPERTIES (
+              'parquet.compression'='SNAPPY'
+          );
+      
+      - id: athena_insert_data
+        type: io.kestra.plugin.aws.athena.Query
+        query: |
+          INSERT INTO yellow_tripdata_final
+          SELECT
+            to_hex(MD5(to_utf8(
+              CONCAT(
+                COALESCE(CAST(VendorID AS VARCHAR), ''),
+                COALESCE(CAST(tpep_pickup_datetime AS VARCHAR), ''),
+                COALESCE(CAST(tpep_dropoff_datetime AS VARCHAR), ''),
+                COALESCE(CAST(PULocationID AS VARCHAR), ''),
+                COALESCE(CAST(DOLocationID AS VARCHAR), '')
+              )
+            ))) AS unique_row_id,
+            '{{render(vars.file)}}' AS filename,
+            VendorID,
+            tpep_pickup_datetime,
+            tpep_dropoff_datetime,
+            passenger_count,
+            trip_distance,
+            RatecodeID,
+            store_and_fwd_flag,
+            PULocationID,
+            DOLocationID,
+            payment_type,
+            fare_amount,
+            extra,
+            mta_tax,
+            tip_amount,
+            tolls_amount,
+            improvement_surcharge,
+            total_amount,
+            congestion_surcharge,
+            '{{inputs.year}}' AS year,
+            '{{inputs.month}}' AS month
+          FROM (
+            SELECT *,
+              ROW_NUMBER() OVER (
+                PARTITION BY 
+                  VendorID,
+                  tpep_pickup_datetime,
+                  tpep_dropoff_datetime,
+                  PULocationID,
+                  DOLocationID
+                ORDER BY tpep_pickup_datetime
+              ) AS row_num
+            FROM yellow_tripdata_staging
+            WHERE year='{{inputs.year}}' AND month='{{inputs.month}}'
+          )
+          WHERE row_num = 1;
+  
+  - id: if_green_taxi
+    type: io.kestra.plugin.core.flow.If
+    condition: "{{inputs.taxi == 'green'}}"
+    then:
+      - id: athena_create_green_staging_table
+        type: io.kestra.plugin.aws.athena.Query
+        query: |
+          CREATE EXTERNAL TABLE IF NOT EXISTS green_tripdata_staging (
+              VendorID STRING,
+              lpep_pickup_datetime TIMESTAMP,
+              lpep_dropoff_datetime TIMESTAMP,
+              store_and_fwd_flag STRING,
+              RatecodeID STRING,
+              PULocationID STRING,
+              DOLocationID STRING,
+              passenger_count INT,
+              trip_distance DECIMAL(10,2),
+              fare_amount DECIMAL(10,2),
+              extra DECIMAL(10,2),
+              mta_tax DECIMAL(10,2),
+              tip_amount DECIMAL(10,2),
+              tolls_amount DECIMAL(10,2),
+              ehail_fee DECIMAL(10,2),
+              improvement_surcharge DECIMAL(10,2),
+              total_amount DECIMAL(10,2),
+              payment_type INT,
+              trip_type INT,
+              congestion_surcharge DECIMAL(10,2)
+          )
+          PARTITIONED BY (year STRING, month STRING)
+          ROW FORMAT DELIMITED
+          FIELDS TERMINATED BY ','
+          STORED AS TEXTFILE
+          LOCATION 's3://{{ kv('AWS_BUCKET_NAME') }}/green/'
+          TBLPROPERTIES (
+              'skip.header.line.count'='1',
+              'serialization.null.format'=''
+          );
+
+      - id: athena_repair_partitions_green
+        type: io.kestra.plugin.aws.athena.Query
+        query: |
+          MSCK REPAIR TABLE green_tripdata_staging;
+
+      - id: athena_create_green_final_table
+        type: io.kestra.plugin.aws.athena.Query
+        query: |
+          CREATE EXTERNAL TABLE IF NOT EXISTS green_tripdata_final (
+              unique_row_id VARCHAR(32),
+              filename VARCHAR(255),
+              VendorID STRING,
+              lpep_pickup_datetime TIMESTAMP,
+              lpep_dropoff_datetime TIMESTAMP,
+              store_and_fwd_flag STRING,
+              RatecodeID STRING,
+              PULocationID STRING,
+              DOLocationID STRING,
+              passenger_count INT,
+              trip_distance DECIMAL(10,2),
+              fare_amount DECIMAL(10,2),
+              extra DECIMAL(10,2),
+              mta_tax DECIMAL(10,2),
+              tip_amount DECIMAL(10,2),
+              tolls_amount DECIMAL(10,2),
+              ehail_fee DECIMAL(10,2),
+              improvement_surcharge DECIMAL(10,2),
+              total_amount DECIMAL(10,2),
+              payment_type INT,
+              trip_type INT,
+              congestion_surcharge DECIMAL(10,2)
+          )
+          PARTITIONED BY (year STRING, month STRING)
+          STORED AS PARQUET
+          LOCATION 's3://{{ kv('AWS_BUCKET_NAME') }}/green_final/'
+          TBLPROPERTIES (
+              'parquet.compression'='SNAPPY'
+          );
+
+      - id: athena_insert_data_green
+        type: io.kestra.plugin.aws.athena.Query
+        query: |
+          INSERT INTO green_tripdata_final
+          SELECT
+            to_hex(MD5(to_utf8(
+              CONCAT(
+                COALESCE(CAST(VendorID AS VARCHAR), ''),
+                COALESCE(CAST(lpep_pickup_datetime AS VARCHAR), ''),
+                COALESCE(CAST(lpep_dropoff_datetime AS VARCHAR), ''),
+                COALESCE(CAST(PULocationID AS VARCHAR), ''),
+                COALESCE(CAST(DOLocationID AS VARCHAR), '')
+              )
+            ))) AS unique_row_id,
+            '{{render(vars.file)}}' AS filename,
+            VendorID,
+            lpep_pickup_datetime,
+            lpep_dropoff_datetime,
+            store_and_fwd_flag,
+            RatecodeID,
+            PULocationID,
+            DOLocationID,
+            passenger_count,
+            trip_distance,
+            fare_amount,
+            extra,
+            mta_tax,
+            tip_amount,
+            tolls_amount,
+            ehail_fee,
+            improvement_surcharge,
+            total_amount,
+            payment_type,
+            trip_type,
+            congestion_surcharge,
+            '{{inputs.year}}' AS year,
+            '{{inputs.month}}' AS month
+          FROM (
+            SELECT *,
+              ROW_NUMBER() OVER (
+                PARTITION BY 
+                  VendorID,
+                  lpep_pickup_datetime,
+                  lpep_dropoff_datetime,
+                  PULocationID,
+                  DOLocationID
+                ORDER BY lpep_pickup_datetime
+              ) AS row_num
+            FROM green_tripdata_staging
+            WHERE year='{{inputs.year}}' AND month='{{inputs.month}}'
+          )
+          WHERE row_num = 1;
+  
+  - id: purge_files
+    type: io.kestra.plugin.core.storage.PurgeCurrentExecutionFiles
+    description: If you'd like to explore Kestra outputs, disable it.
+    disabled: false
+
+pluginDefaults:
+  - type: io.kestra.plugin.aws
+    values:
+      accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+      secretKeyId: "{{ secret('AWS_SECRET_KEY_ID') }}"
+      region: "{{ kv('AWS_LOCATION') }}"
+  
+  - type: io.kestra.plugin.aws.s3
+    values:
+      accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+      secretKeyId: "{{ secret('AWS_SECRET_KEY_ID') }}"
+      region: "{{ kv('AWS_LOCATION') }}"
+      bucket: "{{ kv('AWS_BUCKET_NAME') }}"
+  
+  - type: io.kestra.plugin.aws.athena
+    values:
+      accessKeyId: "{{ secret('AWS_ACCESS_KEY_ID') }}"
+      secretKeyId: "{{ secret('AWS_SECRET_KEY_ID') }}"
+      region: "{{ kv('AWS_LOCATION') }}"
+      database: "{{ kv('AWS_DATABASE') }}"
+      outputLocation: "s3://{{ kv('AWS_BUCKET_NAME') }}/athena-results/"

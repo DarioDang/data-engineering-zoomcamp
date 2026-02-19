@@ -1,0 +1,23 @@
+name: bruin-nyc-taxi
+
+default_connections:
+  postgres: postgres_local
+
+variables:
+  year:
+    type: integer
+    default: 2019
+  month:
+    type: integer
+    default: 1
+  taxi_type:
+    type: string
+    default: green
+
+assets:
+  # dbt models - orchestrated by Bruin
+  - name: dbt_models
+    type: dbt
+    path: assets/ny_taxi_dbt_core
+    connection: postgres_local
+
